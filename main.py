@@ -1,5 +1,5 @@
 #!~/anaconda/envs/Transition/bin/python python
-#!/usr/bin/env python
+# !/usr/bin/env python
 # coding: utf-8
 
 
@@ -164,7 +164,8 @@ def main(path="./pdftoimage/",
          pos_reg=1,
          pos=None,
          quality=(250, 250),
-         quality_pres=(500, 500)):
+         quality_pres=(500, 500),
+         t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999]):
     number_slide = preprocess(path_slide=path_slide, path=path, quality=quality, quality_pres=quality_pres)
 
     number_color = 3
@@ -206,38 +207,42 @@ def main(path="./pdftoimage/",
                                pos_reg=pos_reg,
                                first=True)
         dict_plot = {}
-        dict_plot["T"] = T
-        dict_plot["X"] = X
+        # dict_plot["T"] = T
+        # dict_plot["X"] = X
         dict_plot["I_PIL"] = [I_PIL[i], I_PIL[i + 1]]
-        dict_plot["path"] = path
-        with open(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle", 'wb') as handle:
-            pickle.dump(dict_plot, handle)
+        # dict_plot["path"] = path
+        # with open(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle", 'wb') as handle:
+        #     pickle.dump(dict_plot, handle)
 
+        # def plot(path="./pdftoimage/",
+        #          path_slide="./Presentation_OT.pdf",
+        #          t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999],
+        #          height=10,
+        #          width=10,
+        #          save=False,
+        #          plot_fig=True):
+        #     i = -1
+        #     while True:
+        #         i = i + 1
+        #         try:
+        #             print(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle")
+        #             with open(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle", 'rb') as handle:
+        #                 dict_plot = pickle.load(handle)
+        #         except:
+        #             break
+        save = False
+        plot_fig = False
+        height, width =10, 10
 
-def plot(path="./pdftoimage/",
-         path_slide="./Presentation_OT.pdf",
-         t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999],
-         height=10,
-         width=10,
-         save=False,
-         plot_fig=True):
-    i = -1
-    while True:
-        i = i + 1
-        try:
-            print(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle")
-            with open(path + "pickle_T/" + path_slide[2:-4] + str(i) + ".pickle", 'rb') as handle:
-                dict_plot = pickle.load(handle)
-        except:
-            break
         time_init = time.time()
-        T = dict_plot["T"]
-        X = dict_plot["X"]
-        I_PIL = dict_plot["I_PIL"]
+        # T = dict_plot["T"]
+        # X = dict_plot["X"]
+        I_PIL_plot = dict_plot["I_PIL"]
         path_generated = path + "png_transition_generated/"
 
         T_pos = np.concatenate((np.array(T[0])[np.newaxis], np.array(T[1])[np.newaxis]), axis=0)
         T_val = np.array(T[2])
+        T = 0
         #         T_coo = coo_matrix(T)
         #         T = [T_coo.row, T_coo.col, T_coo.data]
 
@@ -260,7 +265,7 @@ def plot(path="./pdftoimage/",
         #         fig.set_figheight(height * (len(t_list) + 2))
         #         fig.set_figwidth(width)
         fig = plt.figure(figsize=(height, width))
-        plt.imshow(1 - I_PIL[0])
+        plt.imshow(1 - I_PIL_plot[0])
         plt.axis('off')
         if save:
             plt.savefig(path_generated + str(i) + "_0" + ".png", bbox_inches='tight', pad_inches=0)
@@ -269,8 +274,8 @@ def plot(path="./pdftoimage/",
         for j, t in enumerate(reversed(t_list)):
             print("t", t, j, time.time() - time_init)
 
-            I_t = np.zeros((max(I_PIL[0].shape[0], I_PIL[1].shape[0]),
-                            max(I_PIL[0].shape[1], I_PIL[1].shape[1]),
+            I_t = np.zeros((max(I_PIL_plot[0].shape[0], I_PIL_plot[1].shape[0]),
+                            max(I_PIL_plot[0].shape[1], I_PIL_plot[1].shape[1]),
                             3))
             #             for k in range(len(T[0])):
             #                 x_pos_k,y_pos_k,color1,color2,color3 = X[i][T_pos[0][k]] * t + X[i + 1][T_pos[1][k]] * (1 - t)
@@ -291,13 +296,15 @@ def plot(path="./pdftoimage/",
             if plot_fig:
                 plt.show()
         fig = plt.figure(figsize=(height, width))
-        plt.imshow(1 - I_PIL[1])
+        plt.imshow(1 - I_PIL_plot[1])
         plt.axis('off')
         if save:
             plt.savefig(path_generated + str(i) + "_1" + ".png", bbox_inches='tight', pad_inches=0)
         if plot_fig:
             plt.show()
         plt.close('all')
+        T_pos, T_val = 0, 0
+
     dict_plot2 = {}
     dict_plot2["t_list"] = t_list
     dict_plot2["I"] = i
@@ -359,16 +366,17 @@ if __name__ == "__main__":
     parser.add_argument('-G', '--G', action="store_false")
     parser.add_argument('-V', '--V', action="store_false")
     # parser.add_argument('--t_list', type=str, default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
-    parser.add_argument('--t_list', type=str, default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
+    parser.add_argument('--t_list', type=str,
+                        default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
     args = parser.parse_args()
     I = args.number_slide
     t_list = (args.t_list).split(",")
     for i in range(len(t_list)):
         t_list[i] = float(t_list[i])
     if args.T:
-        main(K=args.K, quality=(args.qualityx, args.qualityy), quality_pres=(args.qualityx_pres, args.qualityy_pres))
-    if args.P:
-        plot(save=True, plot_fig=False, t_list=t_list)
+        main(K=args.K, quality=(args.qualityx, args.qualityy), quality_pres=(args.qualityx_pres, args.qualityy_pres), t_list=t_list)
+    # if args.P:
+    #     plot(save=True, plot_fig=False, t_list=t_list)
     if args.G:
         I = create_gif(duration=args.duration)
     assert I is not None

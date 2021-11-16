@@ -165,9 +165,11 @@ def main(path="./pdftoimage/",
          pos=None,
          quality=(250, 250),
          quality_pres=(500, 500),
-         t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999]):
+         t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999],
+         only_preprocess=False):
     number_slide = preprocess(path_slide=path_slide, path=path, quality=quality, quality_pres=quality_pres)
-
+    if only_preprocess:
+        return None
     number_color = 3
 
     time_init = time.time()
@@ -230,7 +232,7 @@ def main(path="./pdftoimage/",
         #                 dict_plot = pickle.load(handle)
         #         except:
         #             break
-        save = False
+        save = True
         plot_fig = False
         height, width =10, 10
 
@@ -365,6 +367,7 @@ if __name__ == "__main__":
     parser.add_argument('-P', '--P', action="store_false")
     parser.add_argument('-G', '--G', action="store_false")
     parser.add_argument('-V', '--V', action="store_false")
+    parser.add_argument('-O', '--onlypreprocess', action="store_true")
     # parser.add_argument('--t_list', type=str, default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
     parser.add_argument('--t_list', type=str,
                         default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
@@ -374,7 +377,8 @@ if __name__ == "__main__":
     for i in range(len(t_list)):
         t_list[i] = float(t_list[i])
     if args.T:
-        main(K=args.K, quality=(args.qualityx, args.qualityy), quality_pres=(args.qualityx_pres, args.qualityy_pres), t_list=t_list)
+        main(K=args.K, quality=(args.qualityx, args.qualityy), quality_pres=(args.qualityx_pres, args.qualityy_pres),
+             t_list=t_list, only_preprocess=args.onlypreprocess)
     # if args.P:
     #     plot(save=True, plot_fig=False, t_list=t_list)
     if args.G:

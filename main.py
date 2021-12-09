@@ -166,7 +166,8 @@ def main(path="./pdftoimage/",
          quality=(250, 250),
          quality_pres=(500, 500),
          t_list=[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.995, 0.999],
-         only_preprocess=False):
+         only_preprocess=False,
+         slides=None):
     number_slide = preprocess(path_slide=path_slide, path=path, quality=quality, quality_pres=quality_pres)
     if only_preprocess:
         return None
@@ -201,7 +202,9 @@ def main(path="./pdftoimage/",
 
     print(X[0].shape)
 
-    for i in range(len(X) - 1):
+    if slides is None:
+        slides = range(len(X) - 1)
+    for i in slides:
         print("")
         print(i)
         T = scale_recursive_OT(X[i], X[i + 1], K=K, time_init=time_init,
@@ -371,22 +374,32 @@ if __name__ == "__main__":
     # parser.add_argument('--t_list', type=str, default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
     parser.add_argument('--t_list', type=str,
                         default="0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,0.995,0.999")
+    parser.add_argument('-S', '--slide', action="store_true")
+                        # default="")
     args = parser.parse_args()
+    if args.slide:
+        list_index = [0,4,6,2,3,1,1,4,1,1,3,1,1,1,3,1,1,3,3,1,2,1,1,2,1,2,4,1,2,1,5,2,1,1,6,1,1,1,4,6,4,1]
+        list_index = np.cumsum(list_index)
+    else:
+        list_index = None
+
+    time_init_total = time.time()
+    # args.slides = list_index
     I = args.number_slide
     t_list = (args.t_list).split(",")
     for i in range(len(t_list)):
         t_list[i] = float(t_list[i])
     if args.T:
         main(K=args.K, quality=(args.qualityx, args.qualityy), quality_pres=(args.qualityx_pres, args.qualityy_pres),
-             t_list=t_list, only_preprocess=args.onlypreprocess)
+             t_list=t_list, only_preprocess=args.onlypreprocess, slides=list_index)
     # if args.P:
     #     plot(save=True, plot_fig=False, t_list=t_list)
-    if args.G:
+    if args.G and not(args.onlypreprocess):
         I = create_gif(duration=args.duration)
     assert I is not None
-    if args.V:
+    if args.V and not(args.onlypreprocess):
         subprocess.check_call(["./video.sh", str(I - 1)])
-
+    print("Time final:", time.time() - time_init_total)
     # subprocess.call("webm -i ./ pdftoimage / gif_generated /" + str(i) + "-" + str(j) +".gif. / pdftoimage / video_generated /" +
     #                 str(i) + "-" + str(j) + ".mp4",
     #                 shell=True)
